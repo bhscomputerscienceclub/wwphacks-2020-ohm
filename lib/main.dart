@@ -1,10 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:foreground_service/foreground_service.dart';
+import 'package:noise_meter/noise_meter.dart';
+import 'package:flutter/services.dart';
+import 'recording.dart';
+
+import 'package:wakelock/wakelock.dart';
+import 'package:flutter/foundation.dart' as Foundation;
+import 'fancybox.dart';
 
 void main() {
   runApp(MyApp());
-
-  maybeStartFGS();
+  if (!Foundation.kReleaseMode) {
+    Wakelock.enable();
+  }
 }
 
 //use an async method so we can await
@@ -13,15 +23,14 @@ void maybeStartFGS() async {
   ///but if the foreground service stayed alive,
   ///this does not need to be re-done
   if (!(await ForegroundService.foregroundServiceIsStarted())) {
-    await ForegroundService.setServiceIntervalSeconds(5);
+    await ForegroundService.setServiceIntervalSeconds(1);
 
     //necessity of editMode is dubious (see function comments)
     await ForegroundService.notification.startEditMode();
 
     await ForegroundService.notification
-        .setTitle("Example Title: ${DateTime.now()}");
-    await ForegroundService.notification
-        .setText("Example Text: ${DateTime.now()}");
+        .setTitle("Noise Meter"); //TODO: app name here
+    await ForegroundService.notification.setText("Currently recording");
 
     await ForegroundService.notification.finishEditMode();
 
@@ -31,22 +40,17 @@ void maybeStartFGS() async {
 
   ///this exists solely in the main app/isolate,
   ///so needs to be redone after every app kill+relaunch
-  await ForegroundService.setupIsolateCommunication((data) {
-    debugPrint("main received: $data");
-  });
 }
 
 void foregroundServiceFunction() {
-  debugPrint("The current time is: ${DateTime.now()}");
-  ForegroundService.notification.setText("The time was: ${DateTime.now()}");
+  ForegroundService.notification.setText("Recording");
 
   if (!ForegroundService.isIsolateCommunicationSetup) {
     ForegroundService.setupIsolateCommunication((data) {
       debugPrint("bg isolate received: $data");
     });
   }
-
-  ForegroundService.sendToPort("message from bg isolate");
+//ForegroundService.sendToPort("${DateTime.now()}");
 }
 
 class MyApp extends StatefulWidget {
@@ -56,10 +60,30 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _appMessage = "";
-
+  String time = "111";
+  Recording rec;
   @override
   void initState() {
     super.initState();
+    //ForegroundService.setupIsolateCommunication(onNotificationData);
+    rec = Recording();
+    loop();
+    _toggleForegroundServiceOnOff();
+    rec.start();
+  }
+
+  void loop() {
+    Timer.periodic(Duration(milliseconds: 33), (timer) {
+      setState(() {});
+    });
+  }
+
+  void onNotificationData(data) {
+    setState(() {
+      debugPrint("main received: $data");
+
+      time = "main received: $data";
+    });
   }
 
   void _toggleForegroundServiceOnOff() async {
@@ -84,40 +108,30 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('Apoleia'),
         ),
         body: Center(
             child: Column(
           children: <Widget>[
-            Text('Foreground Service Example',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            Padding(padding: EdgeInsets.all(8.0)),
-            Text(_appMessage, style: TextStyle(fontStyle: FontStyle.italic))
+            Text(_appMessage, style: TextStyle(fontStyle: FontStyle.italic)),
+            RaisedButton(
+                child: rec.active ? Icon(Icons.stop) : Icon(Icons.mic),
+                onPressed: () {
+                  _toggleForegroundServiceOnOff();
+                  rec.toggle();
+                }),
+            Text(rec.volumeStr,style: TextStyle(fontSize: )),
+            Row(children: <Widget>[
+              FancyBox(),
+              Padding(
+                padding: EdgeInsets.only(
+                    left: 5, top: rec.volume, bottom: 255 - rec.volume),
+                child: Icon(Icons.arrow_back),
+              ),
+            ],mainAxisAlignment: MainAxisAlignment.center)
           ],
           mainAxisAlignment: MainAxisAlignment.center,
         )),
-        floatingActionButton: Column(
-          children: <Widget>[
-            FloatingActionButton(
-              child: Text("F"),
-              onPressed: _toggleForegroundServiceOnOff,
-              tooltip: "Toggle Foreground Service On/Off",
-            ),
-            FloatingActionButton(
-              child: Text("T"),
-              onPressed: () async {
-                if (await ForegroundService
-                    .isBackgroundIsolateSetupComplete()) {
-                  await ForegroundService.sendToPort("message from main");
-                } else {
-                  debugPrint("bg isolate setup not yet complete");
-                }
-              },
-              tooltip: "Send test message to bg isolate from main app",
-            )
-          ],
-          mainAxisAlignment: MainAxisAlignment.end,
-        ),
       ),
     );
   }
