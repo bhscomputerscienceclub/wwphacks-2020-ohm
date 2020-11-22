@@ -9,6 +9,7 @@ import 'recording.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:flutter/foundation.dart' as Foundation;
 import 'fancybox.dart';
+import 'storage.dart';
 
 void main() {
   runApp(MyApp());
@@ -62,6 +63,9 @@ class _MyAppState extends State<MyApp> {
   String _appMessage = "";
   String time = "111";
   Recording rec;
+  Storage stor;
+  double recordedMax = -1;
+
   @override
   void initState() {
     super.initState();
@@ -70,10 +74,19 @@ class _MyAppState extends State<MyApp> {
     loop();
     _toggleForegroundServiceOnOff();
     rec.start();
+    stor = Storage();
+
   }
 
   void loop() {
-    Timer.periodic(Duration(milliseconds: 33), (timer) {
+    Timer.periodic(Duration(milliseconds: 100), (timer) async {
+      double v = rec.volume;
+      if (v != null) {
+        if (v > recordedMax) {
+          recordedMax = v;
+          stor.writeContent(v);
+        }
+      }
       setState(() {});
     });
   }
@@ -92,10 +105,10 @@ class _MyAppState extends State<MyApp> {
 
     if (fgsIsRunning) {
       await ForegroundService.stopForegroundService();
-      appMessage = "Stopped foreground service.";
+      appMessage = "Stopped recording noise data.";
     } else {
       maybeStartFGS();
-      appMessage = "Started foreground service.";
+      appMessage = "Started recording noise data.";
     }
 
     setState(() {
@@ -120,15 +133,17 @@ class _MyAppState extends State<MyApp> {
                   _toggleForegroundServiceOnOff();
                   rec.toggle();
                 }),
-            Text(rec.volumeStr,style: TextStyle(fontSize: )),
+            Text(rec.volumeStr, style: TextStyle(fontSize: 20)),
             Row(children: <Widget>[
               FancyBox(),
               Padding(
                 padding: EdgeInsets.only(
-                    left: 5, top: rec.volume, bottom: 255 - rec.volume),
+                    left: 5, top: rec.volume * 2, bottom: 255 - rec.volume * 2),
                 child: Icon(Icons.arrow_back),
               ),
-            ],mainAxisAlignment: MainAxisAlignment.center)
+            ], mainAxisAlignment: MainAxisAlignment.center),
+            Text(
+                "Today's max volume that you have been exposed to id $recordedMax DB")
           ],
           mainAxisAlignment: MainAxisAlignment.center,
         )),

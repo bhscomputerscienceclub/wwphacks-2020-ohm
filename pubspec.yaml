@@ -15,6 +15,9 @@ dependencies:
   foreground_service:
   noise_meter:
   wakelock:
+  path_provider:
+
+
 
 dev_dependencies:
   flutter_test:
