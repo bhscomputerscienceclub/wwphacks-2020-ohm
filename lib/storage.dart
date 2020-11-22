@@ -17,8 +17,9 @@ class Storage {
   Future<File> writeContent(double d) async {
     final file = await _localFile('max');
     // Write the file
-    if (d == null) return file;
-    return file.writeAsString(d.toStringAsFixed(1));
+    print("writing ${d.toStringAsFixed(1)}");
+    if (!(d is double)) return file;
+    return file.writeAsString('60', flush: true);
   }
 
   Future<double> readcontent() async {

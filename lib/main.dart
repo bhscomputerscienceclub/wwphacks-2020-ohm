@@ -75,13 +75,12 @@ class _MyAppState extends State<MyApp> {
     _toggleForegroundServiceOnOff();
     rec.start();
     stor = Storage();
-
   }
 
   void loop() {
     Timer.periodic(Duration(milliseconds: 100), (timer) async {
-      double v = rec.volume;
-      if (v != null) {
+      double v = rec.volume ?? -2;
+      if (v != -2) {
         if (v > recordedMax) {
           recordedMax = v;
           stor.writeContent(v);
@@ -119,6 +118,12 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        // Define the default brightness and colors.
+        brightness: Brightness.light,
+        primaryColor: Colors.lightGreen[800],
+        accentColor: Colors.cyan[600],
+      ),
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Apoleia'),
@@ -142,8 +147,8 @@ class _MyAppState extends State<MyApp> {
                 child: Icon(Icons.arrow_back),
               ),
             ], mainAxisAlignment: MainAxisAlignment.center),
-            Text(
-                "Today's max volume that you have been exposed to id $recordedMax DB")
+            Text("Today's max exposure: ${recordedMax.toStringAsFixed(0)} DB",
+                style: TextStyle(fontSize: 15))
           ],
           mainAxisAlignment: MainAxisAlignment.center,
         )),
