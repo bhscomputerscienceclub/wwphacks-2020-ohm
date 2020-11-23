@@ -1,7 +1,7 @@
 # Apoleia Noise Tracker
 
-Manage your health by tracking your diet
-
+Try to reduce preventable hearing loss using advanced monitoring techniques 
+ 
 More details at https://devpost.com/software/noisetracker  
 Download the apk at https://github.com/bhscomputerscienceclub/wwphacks-2020-ohm/releases  
 Video demonstration: https://www.youtube.com/watch?v=Cau4sZzlv7U  
