@@ -2,15 +2,14 @@
 
 Manage your health by tracking your diet
 
-More details at https://devpost.com/software/noisetracker
-Download the apk at https://github.com/bhscomputerscienceclub/wwphacks-2020-ohm/releases
-Video demonstration: https://www.youtube.com/watch?v=Cau4sZzlv7U
+More details at https://devpost.com/software/noisetracker  
+Download the apk at https://github.com/bhscomputerscienceclub/wwphacks-2020-ohm/releases  
+Video demonstration: https://www.youtube.com/watch?v=Cau4sZzlv7U  
 
 By:
-
-    @karmanyaahm
-    @mooreli10423
-    @jgold12
+- @karmanyaahm
+- @mooreli10423
+- @jgold12
     
 [Link to the Slideshow](https://docs.google.com/presentation/d/1uY0nI8e0O7Oyt7t-fotuANjd26rCTVCvsNk8ZUlibLg/edit?usp=sharing)
 
